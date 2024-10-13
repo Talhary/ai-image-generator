@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Image Generator & Upscaler</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-6">AI Image Generator & Upscaler</h1>
+    
+        <!-- Image Generation Form -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <h2 class="text-2xl font-semibold mb-4">Generate Image</h2>
+          <form id="generateForm" class="space-y-4">
+            <div>
+              <label for="prompt" class="block font-medium">Enter Prompt:</label>
+              <input type="text" id="prompt" name="prompt" 
+                class="w-full border border-gray-400 rounded-lg shadow-sm p-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                required>
+            </div>
+            <button type="submit" id="generateButton" 
+              class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+              <span>Generate Image</span>
+              <svg id="loadingSpinnerGen" class="animate-spin h-5 w-5 ml-2 text-white hidden" 
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+            </button>
+          </form>
+          <div id="generatedImage" class="mt-4 hidden">
+            <h3 class="text-xl font-semibold mb-2">Generated Image:</h3>
+            <img id="imageResult" src="" alt="Generated Image" class="w-full rounded-lg mb-4">
+            <button id="upscaleGeneratedButton" 
+              class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center">
+              <span>Upscale Generated Image</span>
+              <svg id="loadingSpinnerUpscaleGen" class="animate-spin h-5 w-5 ml-2 text-white hidden" 
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+    
+        <!-- Image Upscaling Form -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h2 class="text-2xl font-semibold mb-4">Upscale Image</h2>
+          <form id="upscaleForm" class="space-y-4">
+            <div>
+              <label for="imageUrl" class="block font-medium">Enter Image URL:</label>
+              <input type="text" id="imageUrl" name="url" 
+                class="w-full border border-gray-400 rounded-lg shadow-sm p-2 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" 
+                required>
+            </div>
+            <button type="submit" id="upscaleButton" 
+              class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center">
+              <span>Upscale Image</span>
+              <svg id="loadingSpinnerUpscale" class="animate-spin h-5 w-5 ml-2 text-white hidden" 
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+            </button>
+          </form>
+          <div id="upscaledImage" class="mt-4 hidden">
+            <h3 class="text-xl font-semibold mb-2">Upscaled Image:</h3>
+            <img id="upscaleResult" src="" alt="Upscaled Image" class="w-full rounded-lg">
+          </div>
+        </div>
+      </div>
+
+  <script>
+    // Disable button and show spinner
+    function toggleButtonState(buttonId, spinnerId, disable) {
+      const button = document.getElementById(buttonId);
+      const spinner = document.getElementById(spinnerId);
+      if (disable) {
+        button.disabled = true;
+        spinner.classList.remove('hidden');
+      } else {
+        button.disabled = false;
+        spinner.classList.add('hidden');
+      }
+    }
+
+    // Handle Image Generation
+    document.getElementById('generateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const prompt = document.getElementById('prompt').value;
+      toggleButtonState('generateButton', 'loadingSpinnerGen', true);
+
+      const response = await fetch('/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const result = await response.json();
+      toggleButtonState('generateButton', 'loadingSpinnerGen', false);
+
+      if (result.res.url) {
+        document.getElementById('imageResult').src = result.res.url;
+        document.getElementById('generatedImage').classList.remove('hidden');
+      }
+    });
+
+    // Handle Image Upscaling for URL
+    document.getElementById('upscaleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = document.getElementById('imageUrl').value;
+      toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', true);
+
+      const response = await fetch('/upscale-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      const result = await response.json();
+      toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', false);
+
+      if (result.res) {
+        document.getElementById('upscaleResult').src = result.res;
+        document.getElementById('upscaledImage').classList.remove('hidden');
+      }
+    });
+
+    // Handle Upscale of Generated Image
+    document.getElementById('upscaleGeneratedButton').addEventListener('click', async () => {
+      const url = document.getElementById('imageResult').src;
+      toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', true);
+
+      const response = await fetch('/upscale-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      const result = await response.json();
+      toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', false);
+
+      if (result.res) {
+        document.getElementById('upscaleResult').src = result.res;
+        document.getElementById('upscaledImage').classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
