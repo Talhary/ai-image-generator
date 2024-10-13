@@ -106,15 +106,15 @@
       localStorage.setItem('imageUrls', JSON.stringify(images));
       displayImages();
     }
-
-    // Remove an image URL from local storage
-    function removeImageUrl(url) {
-      const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
-      const updatedImages = images.filter(imageUrl => imageUrl !== url);
-      localStorage.setItem('imageUrls', JSON.stringify(updatedImages));
+  function removeImage (url){
+    const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
+    const index = images.indexOf(url);
+    if (index > -1) {
+      images.splice(index, 1);
+      localStorage.setItem('imageUrls', JSON.stringify(images));
       displayImages();
     }
-
+  }
     // Display images from local storage
     function displayImages() {
       const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
@@ -126,13 +126,14 @@
         imgDiv.className = 'bg-white rounded-lg shadow-lg overflow-hidden dark:bg-gray-800';
         imgDiv.innerHTML = `
           <img src="${url}" alt="Generated Image" class="w-full">
-          <div class="p-2 flex justify-between items-center">
-            <div class="flex space-x-2">
-              <a href="${url}" class="bg-blue-500 text-white px-4 py-2   my-3  rounded-lg hover:bg-blue-600" download>Download</a>
-              <a href="${url}" target="_blank" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg my-3 hover:bg-gray-400">Open</a>
-            </div>
-            <button class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600" onclick="removeImageUrl('${url}')">Delete</button>
+          <div class="p-2 flex justify-between items-center gap-x-2">
+            <a href="${url}" class="bg-blue-500 flex-1 text-white px-4 py-2 mt-1  rounded-lg hover:bg-blue-600" download>Download</a>
+            <a href="${url}" target="_blank" class="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg  hover:bg-gray-400">Open</a>
           </div>
+          <div class="p-2">
+          <button class="bg-red-500  w-full text-white px-4 py-2 rounded-lg hover:bg-red-600" onclick="removeImage('${url}')">Remove</button>
+            
+            </div>
         `;
         imagesDisplay.appendChild(imgDiv);
       });
@@ -143,35 +144,91 @@
       e.preventDefault();
       const prompt = document.getElementById('prompt').value;
       toggleButtonState('generateButton', 'loadingSpinnerGen', true);
-      // Simulate image generation (replace this with your actual API call)
-      setTimeout(() => {
-        const generatedUrl = 'https://via.placeholder.com/300.png?text=' + encodeURIComponent(prompt);
-        document.getElementById('imageResult').src = generatedUrl;
+
+      const response = await fetch('/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const result = await response.json();
+      toggleButtonState('generateButton', 'loadingSpinnerGen', false);
+
+      if (result.res.url) {
+        document.getElementById('imageResult').src = result.res.url;
         document.getElementById('generatedImage').classList.remove('hidden');
-        document.getElementById('downloadGeneratedImage').href = generatedUrl;
-        document.getElementById('openGeneratedImage').href = generatedUrl;
-        saveImageUrl(generatedUrl);
-        toggleButtonState('generateButton', 'loadingSpinnerGen', false);
-      }, 2000);
+        
+        // Set download link and open in new tab link
+        document.getElementById('downloadGeneratedImage').href = result.res.url;
+        document.getElementById('openGeneratedImage').href = result.res.url;
+
+        // Save the generated image URL to local storage
+        saveImageUrl(result.res.url);
+      }
     });
 
-    // Handle Image Upscaling
+    // Handle Image Upscaling for URL
     document.getElementById('upscaleForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const imageUrl = document.getElementById('imageUrl').value;
+      const url = document.getElementById('imageUrl').value;
       toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', true);
-      // Simulate image upscaling (replace this with your actual API call)
-      setTimeout(() => {
-        const upscaledUrl = imageUrl; // Replace with actual upscaled image URL
-        document.getElementById('upscaleResult').src = upscaledUrl;
+
+      const response = await fetch('/upscale-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      const result = await response.json();
+      toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', false);
+
+      if (result.res) {
+        document.getElementById('upscaleResult').src = result.res;
         document.getElementById('upscaledImage').classList.remove('hidden');
-        document.getElementById('downloadUpscaledImage').href = upscaledUrl;
-        document.getElementById('openUpscaledImage').href = upscaledUrl;
-        toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', false);
-      }, 2000);
+
+        // Set download link and open in new tab link
+        document.getElementById('downloadUpscaledImage').href = result.res;
+        document.getElementById('openUpscaledImage').href = result.res;
+
+        // Save the upscaled image URL to local storage
+        saveImageUrl(result.res);
+      }
     });
 
-    // Load images on page load
+    // Handle Upscale of Generated Image
+    document.getElementById('upscaleGeneratedButton').addEventListener('click', async () => {
+      const url = document.getElementById('imageResult').src;
+      toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', true);
+
+      const response = await fetch('/upscale-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      const result = await response.json();
+      toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', false);
+
+      if (result.res) {
+        document.getElementById('upscaleResult').src = result.res;
+        document.getElementById('upscaledImage').classList.remove('hidden');
+
+        // Set download link and open in new tab link
+        document.getElementById('downloadUpscaledImage').href = result.res;
+        document.getElementById('openUpscaledImage').href = result.res;
+
+        // Save the upscaled image URL to local storage
+        saveImageUrl(result.res);
+      }
+    });
+
+    // Load images from local storage on page load
     window.onload = displayImages;
   </script>
 </body>
