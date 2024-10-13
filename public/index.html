@@ -78,6 +78,11 @@
             </div>
           </div>
         </div>
+
+        <!-- Display Images Section -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="imagesDisplay">
+          <!-- Images will be displayed here -->
+        </div>
       </div>
 
   <script>
@@ -94,85 +99,80 @@
       }
     }
 
+    // Store image URLs in local storage
+    function saveImageUrl(url) {
+      const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
+      images.push(url);
+      localStorage.setItem('imageUrls', JSON.stringify(images));
+      displayImages();
+    }
+
+    // Remove an image URL from local storage
+    function removeImageUrl(url) {
+      const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
+      const updatedImages = images.filter(imageUrl => imageUrl !== url);
+      localStorage.setItem('imageUrls', JSON.stringify(updatedImages));
+      displayImages();
+    }
+
+    // Display images from local storage
+    function displayImages() {
+      const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
+      const imagesDisplay = document.getElementById('imagesDisplay');
+      imagesDisplay.innerHTML = ''; // Clear previous images
+
+      images.forEach(url => {
+        const imgDiv = document.createElement('div');
+        imgDiv.className = 'bg-white rounded-lg shadow-lg overflow-hidden dark:bg-gray-800';
+        imgDiv.innerHTML = `
+          <img src="${url}" alt="Generated Image" class="w-full">
+          <div class="p-2 flex justify-between items-center">
+            <div class="flex space-x-2">
+              <a href="${url}" class="bg-blue-500 text-white px-4 py-2   my-3  rounded-lg hover:bg-blue-600" download>Download</a>
+              <a href="${url}" target="_blank" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg my-3 hover:bg-gray-400">Open</a>
+            </div>
+            <button class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600" onclick="removeImageUrl('${url}')">Delete</button>
+          </div>
+        `;
+        imagesDisplay.appendChild(imgDiv);
+      });
+    }
+
     // Handle Image Generation
     document.getElementById('generateForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const prompt = document.getElementById('prompt').value;
       toggleButtonState('generateButton', 'loadingSpinnerGen', true);
-
-      const response = await fetch('/generate-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const result = await response.json();
-      toggleButtonState('generateButton', 'loadingSpinnerGen', false);
-
-      if (result.res.url) {
-        document.getElementById('imageResult').src = result.res.url;
+      // Simulate image generation (replace this with your actual API call)
+      setTimeout(() => {
+        const generatedUrl = 'https://via.placeholder.com/300.png?text=' + encodeURIComponent(prompt);
+        document.getElementById('imageResult').src = generatedUrl;
         document.getElementById('generatedImage').classList.remove('hidden');
-        
-        // Set download link and open in new tab link
-        document.getElementById('downloadGeneratedImage').href = result.res.url;
-        document.getElementById('openGeneratedImage').href = result.res.url;
-      }
+        document.getElementById('downloadGeneratedImage').href = generatedUrl;
+        document.getElementById('openGeneratedImage').href = generatedUrl;
+        saveImageUrl(generatedUrl);
+        toggleButtonState('generateButton', 'loadingSpinnerGen', false);
+      }, 2000);
     });
 
-    // Handle Image Upscaling for URL
+    // Handle Image Upscaling
     document.getElementById('upscaleForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const url = document.getElementById('imageUrl').value;
+      const imageUrl = document.getElementById('imageUrl').value;
       toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', true);
-
-      const response = await fetch('/upscale-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url }),
-      });
-
-      const result = await response.json();
-      toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', false);
-
-      if (result.res) {
-        document.getElementById('upscaleResult').src = result.res;
+      // Simulate image upscaling (replace this with your actual API call)
+      setTimeout(() => {
+        const upscaledUrl = imageUrl; // Replace with actual upscaled image URL
+        document.getElementById('upscaleResult').src = upscaledUrl;
         document.getElementById('upscaledImage').classList.remove('hidden');
-
-        // Set download link and open in new tab link
-        document.getElementById('downloadUpscaledImage').href = result.res;
-        document.getElementById('openUpscaledImage').href = result.res;
-      }
+        document.getElementById('downloadUpscaledImage').href = upscaledUrl;
+        document.getElementById('openUpscaledImage').href = upscaledUrl;
+        toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', false);
+      }, 2000);
     });
 
-    // Handle Upscale of Generated Image
-    document.getElementById('upscaleGeneratedButton').addEventListener('click', async () => {
-      const url = document.getElementById('imageResult').src;
-      toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', true);
-
-      const response = await fetch('/upscale-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url }),
-      });
-
-      const result = await response.json();
-      toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', false);
-
-      if (result.res) {
-        document.getElementById('upscaleResult').src = result.res;
-        document.getElementById('upscaledImage').classList.remove('hidden');
-
-        // Set download link and open in new tab link
-        document.getElementById('downloadUpscaledImage').href = result.res;
-        document.getElementById('openUpscaledImage').href = result.res;
-      }
-    });
+    // Load images on page load
+    window.onload = displayImages;
   </script>
 </body>
 </html>
