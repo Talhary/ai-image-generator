@@ -108,7 +108,9 @@ async function upscale(url) {
 export const createImage = async (req,res) => {
     const prompt = req.body.prompt;
     if(!prompt) return res.status(400).json({error: 'Prompt is required'});
+    console.log(prompt)
     const image = await generateImage(prompt);
+
     const url =await getUrl(image)
     res.json({ res:url});
 }

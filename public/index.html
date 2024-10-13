@@ -6,18 +6,18 @@
   <title>AI Image Generator & Upscaler</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold text-center mb-6">AI Image Generator & Upscaler</h1>
     
         <!-- Image Generation Form -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
           <h2 class="text-2xl font-semibold mb-4">Generate Image</h2>
           <form id="generateForm" class="space-y-4">
             <div>
               <label for="prompt" class="block font-medium">Enter Prompt:</label>
               <input type="text" id="prompt" name="prompt" 
-                class="w-full border border-gray-400 rounded-lg shadow-sm p-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                class="w-full border border-gray-400 rounded-lg shadow-sm p-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300" 
                 required>
             </div>
             <button type="submit" id="generateButton" 
@@ -33,8 +33,12 @@
           <div id="generatedImage" class="mt-4 hidden">
             <h3 class="text-xl font-semibold mb-2">Generated Image:</h3>
             <img id="imageResult" src="" alt="Generated Image" class="w-full rounded-lg mb-4">
+            <div class="flex space-x-2">
+              <a id="downloadGeneratedImage" href="#" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600" download>Download Image</a>
+              <a id="openGeneratedImage" href="#" target="_blank" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">Open in New Tab</a>
+            </div>
             <button id="upscaleGeneratedButton" 
-              class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center">
+              class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center mt-4">
               <span>Upscale Generated Image</span>
               <svg id="loadingSpinnerUpscaleGen" class="animate-spin h-5 w-5 ml-2 text-white hidden" 
                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -46,13 +50,13 @@
         </div>
     
         <!-- Image Upscaling Form -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="bg-white rounded-lg shadow-lg p-6 dark:bg-gray-800">
           <h2 class="text-2xl font-semibold mb-4">Upscale Image</h2>
           <form id="upscaleForm" class="space-y-4">
             <div>
               <label for="imageUrl" class="block font-medium">Enter Image URL:</label>
               <input type="text" id="imageUrl" name="url" 
-                class="w-full border border-gray-400 rounded-lg shadow-sm p-2 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" 
+                class="w-full border border-gray-400 rounded-lg shadow-sm p-2 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300" 
                 required>
             </div>
             <button type="submit" id="upscaleButton" 
@@ -67,7 +71,11 @@
           </form>
           <div id="upscaledImage" class="mt-4 hidden">
             <h3 class="text-xl font-semibold mb-2">Upscaled Image:</h3>
-            <img id="upscaleResult" src="" alt="Upscaled Image" class="w-full rounded-lg">
+            <img id="upscaleResult" src="" alt="Upscaled Image" class="w-full rounded-lg mb-4">
+            <div class="flex space-x-2">
+              <a id="downloadUpscaledImage" href="#" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600" download>Download Image</a>
+              <a id="openUpscaledImage" href="#" target="_blank" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">Open in New Tab</a>
+            </div>
           </div>
         </div>
       </div>
@@ -106,6 +114,10 @@
       if (result.res.url) {
         document.getElementById('imageResult').src = result.res.url;
         document.getElementById('generatedImage').classList.remove('hidden');
+        
+        // Set download link and open in new tab link
+        document.getElementById('downloadGeneratedImage').href = result.res.url;
+        document.getElementById('openGeneratedImage').href = result.res.url;
       }
     });
 
@@ -129,6 +141,10 @@
       if (result.res) {
         document.getElementById('upscaleResult').src = result.res;
         document.getElementById('upscaledImage').classList.remove('hidden');
+
+        // Set download link and open in new tab link
+        document.getElementById('downloadUpscaledImage').href = result.res;
+        document.getElementById('openUpscaledImage').href = result.res;
       }
     });
 
@@ -151,6 +167,10 @@
       if (result.res) {
         document.getElementById('upscaleResult').src = result.res;
         document.getElementById('upscaledImage').classList.remove('hidden');
+
+        // Set download link and open in new tab link
+        document.getElementById('downloadUpscaledImage').href = result.res;
+        document.getElementById('openUpscaledImage').href = result.res;
       }
     });
   </script>
