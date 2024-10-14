@@ -153,8 +153,9 @@ export const upscaleImage = async (req,res) => {
 
 export const to_anime = async (req, res) => {
   try {
+    console.log(req.body.url)
     const result = await AnimeStyle(req.body.url); // Assuming AnimeStyle is a function handling the anime style conversion
-    console.log(result)
+    // console.log(result)
     if (result.status == 422) {
       return res.status(422).json({ error: result.detail });
     }

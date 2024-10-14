@@ -165,7 +165,15 @@
           localStorage.setItem('imageUrls', JSON.stringify(images));
           displayImages();
         }
-        
+        function removeImage(url){
+          const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
+          const index = images.indexOf(url);
+          if (index > -1) {
+            images.splice(index, 1);
+            localStorage.setItem('imageUrls', JSON.stringify(images));
+            displayImages();
+          }
+        }
         // Display images from local storage
         function displayImages() {
           const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
@@ -181,7 +189,7 @@
                 <a href="${url}" class="bg-blue-500 flex-1 text-white px-4 py-2 mt-1 rounded-lg hover:bg-blue-600" download>Download</a>
                 <a href="${url}" target="_blank" class="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">Open</a>
               </div>
-            `;
+              <button class="bg-red-500 text-white px-4 py-2 w-full rounded-lg hover:bg-red-600 ml-2" onclick="removeImage('${url}')">Remove</button>              `;
             imagesDisplay.appendChild(imgDiv);
           });
         }
