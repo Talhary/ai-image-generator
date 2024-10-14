@@ -78,158 +78,304 @@
             </div>
           </div>
         </div>
-
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
+          <h2 class="text-2xl font-semibold mb-4">Convert Image to Anime Style</h2>
+          <form id="animeForm" class="space-y-4">
+            <div>
+              <label for="animeImageUrl" class="block font-medium">Enter Image URL:</label>
+              <input type="text" id="animeImageUrl" name="url" 
+                class="w-full border border-gray-400 rounded-lg shadow-sm p-2 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300" 
+                required>
+            </div>
+            <button type="submit" id="animeButton" 
+              class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 flex items-center">
+              <span>Convert to Anime Style</span>
+              <svg id="loadingSpinnerAnime" class="animate-spin h-5 w-5 ml-2 text-white hidden" 
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+            </button>
+          </form>
+          <div id="animeImageResult" class="mt-4 hidden">
+            <h3 class="text-xl font-semibold mb-2">Anime Style Image:</h3>
+            <img id="animeResult" src="" alt="Anime Style Image" class="w-full rounded-lg mb-4">
+            <div class="flex space-x-2">
+              <a id="downloadAnimeImage" href="#" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600" download>Download Image</a>
+              <a id="openAnimeImage" href="#" target="_blank" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">Open in New Tab</a>
+            </div>
+          </div>
+        </div>
         <!-- Display Images Section -->
         <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="imagesDisplay">
           <!-- Images will be displayed here -->
         </div>
+        <div class="error" >
+
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm">
+          <h1 class="text-2xl font-bold text-center mb-4">Upload a File</h1>
+          <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
+            <input type="file" name="file" id="file" required class="block w-full text-sm text-gray-500 
+              file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+              file:text-sm file:font-semibold 
+              file:bg-blue-50 file:text-blue-700
+              hover:file:bg-blue-100">
+            
+            <button type="submit" class="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600">Upload</button>
+          </form>
+      
+          <div class="mt-6 space-y-2">
+            <p id="fileUrl" class="text-center text-gray-700 text-sm break-words p-2 border border-gray-300 rounded-lg"></p>
+            <button id="copyButton" class="hidden w-full bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600">Copy URL</button>
+          </div>
+          <dialog id="copyDialog" class="p-4 rounded-lg shadow-lg bg-green-100 text-green-800">
+            <p>Copied to clipboard!</p>
+          </dialog>
+        </div>
       </div>
 
-  <script>
-    // Disable button and show spinner
-    function toggleButtonState(buttonId, spinnerId, disable) {
-      const button = document.getElementById(buttonId);
-      const spinner = document.getElementById(spinnerId);
-      if (disable) {
-        button.disabled = true;
-        spinner.classList.remove('hidden');
-      } else {
-        button.disabled = false;
-        spinner.classList.add('hidden');
-      }
-    }
-
-    // Store image URLs in local storage
-    function saveImageUrl(url) {
-      const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
-      images.push(url);
-      localStorage.setItem('imageUrls', JSON.stringify(images));
-      displayImages();
-    }
-  function removeImage (url){
-    const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
-    const index = images.indexOf(url);
-    if (index > -1) {
-      images.splice(index, 1);
-      localStorage.setItem('imageUrls', JSON.stringify(images));
-      displayImages();
-    }
-  }
-    // Display images from local storage
-    function displayImages() {
-      const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
-      const imagesDisplay = document.getElementById('imagesDisplay');
-      imagesDisplay.innerHTML = ''; // Clear previous images
-
-      images.forEach(url => {
-        const imgDiv = document.createElement('div');
-        imgDiv.className = 'bg-white rounded-lg shadow-lg overflow-hidden dark:bg-gray-800';
-        imgDiv.innerHTML = `
-          <img src="${url}" alt="Generated Image" class="w-full">
-          <div class="p-2 flex justify-between items-center gap-x-2">
-            <a href="${url}" class="bg-blue-500 flex-1 text-white px-4 py-2 mt-1  rounded-lg hover:bg-blue-600" download>Download</a>
-            <a href="${url}" target="_blank" class="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg  hover:bg-gray-400">Open</a>
-          </div>
-          <div class="p-2">
-          <button class="bg-red-500  w-full text-white px-4 py-2 rounded-lg hover:bg-red-600" onclick="removeImage('${url}')">Remove</button>
-            
-            </div>
-        `;
-        imagesDisplay.appendChild(imgDiv);
-      });
-    }
-
-    // Handle Image Generation
-    document.getElementById('generateForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const prompt = document.getElementById('prompt').value;
-      toggleButtonState('generateButton', 'loadingSpinnerGen', true);
-
-      const response = await fetch('/generate-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const result = await response.json();
-      toggleButtonState('generateButton', 'loadingSpinnerGen', false);
-
-      if (result.res.url) {
-        document.getElementById('imageResult').src = result.res.url;
-        document.getElementById('generatedImage').classList.remove('hidden');
+      <script>
+        // Function to show error messages
+        function showError(message) {
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'bg-red-500 text-white px-4 py-2 rounded-lg my-4';
+          errorDiv.textContent = message;
+          document.querySelector('.error').append(errorDiv); // Insert the error at the top of the page
+          setTimeout(() => errorDiv.remove(), 5000); // Remove the error after 5 seconds
+        }
         
-        // Set download link and open in new tab link
-        document.getElementById('downloadGeneratedImage').href = result.res.url;
-        document.getElementById('openGeneratedImage').href = result.res.url;
-
-        // Save the generated image URL to local storage
-        saveImageUrl(result.res.url);
-      }
-    });
-
-    // Handle Image Upscaling for URL
-    document.getElementById('upscaleForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const url = document.getElementById('imageUrl').value;
-      toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', true);
-
-      const response = await fetch('/upscale-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url }),
-      });
-
-      const result = await response.json();
-      toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', false);
-
-      if (result.res) {
-        document.getElementById('upscaleResult').src = result.res;
-        document.getElementById('upscaledImage').classList.remove('hidden');
-
-        // Set download link and open in new tab link
-        document.getElementById('downloadUpscaledImage').href = result.res;
-        document.getElementById('openUpscaledImage').href = result.res;
-
-        // Save the upscaled image URL to local storage
-        saveImageUrl(result.res);
-      }
-    });
-
-    // Handle Upscale of Generated Image
-    document.getElementById('upscaleGeneratedButton').addEventListener('click', async () => {
-      const url = document.getElementById('imageResult').src;
-      toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', true);
-
-      const response = await fetch('/upscale-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url }),
-      });
-
-      const result = await response.json();
-      toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', false);
-
-      if (result.res) {
-        document.getElementById('upscaleResult').src = result.res;
-        document.getElementById('upscaledImage').classList.remove('hidden');
-
-        // Set download link and open in new tab link
-        document.getElementById('downloadUpscaledImage').href = result.res;
-        document.getElementById('openUpscaledImage').href = result.res;
-
-        // Save the upscaled image URL to local storage
-        saveImageUrl(result.res);
-      }
-    });
-
-    // Load images from local storage on page load
-    window.onload = displayImages;
-  </script>
+        // Disable button and show spinner
+        function toggleButtonState(buttonId, spinnerId, disable) {
+          const button = document.getElementById(buttonId);
+          const spinner = document.getElementById(spinnerId);
+          if (disable) {
+            button.disabled = true;
+            spinner.classList.remove('hidden');
+          } else {
+            button.disabled = false;
+            spinner.classList.add('hidden');
+          }
+        }
+        
+        // Store image URLs in local storage
+        function saveImageUrl(url) {
+          const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
+          images.push(url);
+          localStorage.setItem('imageUrls', JSON.stringify(images));
+          displayImages();
+        }
+        
+        // Display images from local storage
+        function displayImages() {
+          const images = JSON.parse(localStorage.getItem('imageUrls')) || [];
+          const imagesDisplay = document.getElementById('imagesDisplay');
+          imagesDisplay.innerHTML = ''; // Clear previous images
+        
+          images.forEach(url => {
+            const imgDiv = document.createElement('div');
+            imgDiv.className = 'bg-white rounded-lg shadow-lg overflow-hidden dark:bg-gray-800';
+            imgDiv.innerHTML = `
+              <img src="${url}" alt="Generated Image" class="w-full">
+              <div class="p-2 flex justify-between items-center gap-x-2">
+                <a href="${url}" class="bg-blue-500 flex-1 text-white px-4 py-2 mt-1 rounded-lg hover:bg-blue-600" download>Download</a>
+                <a href="${url}" target="_blank" class="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">Open</a>
+              </div>
+            `;
+            imagesDisplay.appendChild(imgDiv);
+          });
+        }
+        
+        // Handle Image Generation
+        document.getElementById('generateForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const prompt = document.getElementById('prompt').value;
+          toggleButtonState('generateButton', 'loadingSpinnerGen', true);
+        
+          try {
+            const response = await fetch('/generate-image', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ prompt }),
+            });
+        
+            if (!response.ok) {
+              throw new Error('Failed to generate image. Please try again.');
+            }
+        
+            const result = await response.json();
+            toggleButtonState('generateButton', 'loadingSpinnerGen', false);
+        
+            if (result.res.url) {
+              document.getElementById('imageResult').src = result.res.url;
+              document.getElementById('generatedImage').classList.remove('hidden');
+        
+              // Set download link and open in new tab link
+              document.getElementById('downloadGeneratedImage').href = result.res.url;
+              document.getElementById('openGeneratedImage').href = result.res.url;
+        
+              // Save the generated image URL to local storage
+              saveImageUrl(result.res.url);
+            }
+          } catch (error) {
+            toggleButtonState('generateButton', 'loadingSpinnerGen', false);
+            showError(error.message);
+          }
+        });
+        
+        // Handle Image Upscaling for URL
+        document.getElementById('upscaleForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const url = document.getElementById('imageUrl').value;
+          toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', true);
+        
+          try {
+            const response = await fetch('/upscale-image', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ url }),
+            });
+        
+            if (!response.ok) {
+              throw new Error('Failed to upscale image. Please try again.');
+            }
+        
+            const result = await response.json();
+            toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', false);
+        
+            if (result.res) {
+              document.getElementById('upscaleResult').src = result.res;
+              document.getElementById('upscaledImage').classList.remove('hidden');
+        
+              // Set download link and open in new tab link
+              document.getElementById('downloadUpscaledImage').href = result.res;
+              document.getElementById('openUpscaledImage').href = result.res;
+        
+              // Save the upscaled image URL to local storage
+              saveImageUrl(result.res);
+            }
+          } catch (error) {
+            toggleButtonState('upscaleButton', 'loadingSpinnerUpscale', false);
+            showError(error.message);
+          }
+        });
+        
+        // Handle Upscale of Generated Image
+        document.getElementById('upscaleGeneratedButton').addEventListener('click', async () => {
+          const url = document.getElementById('imageResult').src;
+          toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', true);
+        
+          try {
+            const response = await fetch('/upscale-image', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ url }),
+            });
+        
+            if (!response.ok) {
+              throw new Error('Failed to upscale generated image. Please try again.');
+            }
+        
+            const result = await response.json();
+            toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', false);
+        
+            if (result.res) {
+              document.getElementById('upscaleResult').src = result.res;
+              document.getElementById('upscaledImage').classList.remove('hidden');
+        
+              // Set download link and open in new tab link
+              document.getElementById('downloadUpscaledImage').href = result.res;
+              document.getElementById('openUpscaledImage').href = result.res;
+        
+              // Save the upscaled image URL to local storage
+              saveImageUrl(result.res);
+            }
+          } catch (error) {
+            toggleButtonState('upscaleGeneratedButton', 'loadingSpinnerUpscaleGen', false);
+            showError(error.message);
+          }
+        });
+        
+        // Handle Anime Style Conversion
+        document.getElementById('animeForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const url = document.getElementById('animeImageUrl').value;
+          toggleButtonState('animeButton', 'loadingSpinnerAnime', true);
+        
+          try {
+            const response = await fetch('/image-to-anime', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ url }),
+            });
+        
+            if (!response.ok) {
+              throw new Error('Failed to convert image to anime style. Please try again.');
+            }
+        
+            const result = await response.json();
+            toggleButtonState('animeButton', 'loadingSpinnerAnime', false);
+        
+            if (result.res) {
+              document.getElementById('animeResult').src = result.res;
+              document.getElementById('animeImageResult').classList.remove('hidden');
+        
+              // Set download link and open in new tab link
+              document.getElementById('downloadAnimeImage').href = result.res;
+              document.getElementById('openAnimeImage').href = result.res;
+        
+              // Save the anime-style image URL to local storage
+              saveImageUrl(result.res);
+            }
+          } catch (error) {
+            toggleButtonState('animeButton', 'loadingSpinnerAnime', false);
+            showError(error.message);
+          }
+        });
+        
+        // Load images from local storage on page load
+        window.onload = displayImages;
+        
+        </script>
+           <script>
+            document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+              event.preventDefault();
+              
+              const formData = new FormData();
+              const fileInput = document.getElementById('file');
+              formData.append('file', fileInput.files[0]);
+        
+              const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+              });
+        
+              const result = await response.json();
+        
+              if (result.url) {
+                document.getElementById('fileUrl').textContent = `File uploaded: ${result.url}`;
+                document.getElementById('copyButton').classList.remove('hidden');
+                document.getElementById('copyButton').addEventListener('click', function() {
+                  navigator.clipboard.writeText(result.url);
+                  
+                  // Show dialog for "Copied" message
+                  const copyDialog = document.getElementById('copyDialog');
+                  copyDialog.show();
+                  setTimeout(() => copyDialog.close(), 1500); // Close the dialog after 1.5 seconds
+                });
+              } else {
+                document.getElementById('fileUrl').textContent = 'Failed to upload the file';
+                document.getElementById('copyButton').classList.add('hidden');
+              }
+            });
+          </script>
 </body>
 </html>

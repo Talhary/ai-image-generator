@@ -104,19 +104,67 @@ async function upscale(url) {
   }
 }
 
+async function AnimeStyle(url) {
+  const response = await fetch('https://api.replicate.com/v1/predictions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.REPLICATE_API_TOKEN}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'wait'
+    },
+    body: JSON.stringify({
+      version: "0ce45202d83c6bd379dfe58f4c0c41e6cadf93ebbd9d938cc63cc0f2fcb729a5",
+      input: {
+        seed: 0,
+        image:url,
+        steps: 20,
+        denoising: 0.75,
+        scheduler: "simple",
+        sampler_name: "euler",
+        positive_prompt: "anime style"
+      }
+    })
+  });
+
+  const data = await response.json();
+  return data;
+}
 
 export const createImage = async (req,res) => {
+  try {
     const prompt = req.body.prompt;
     if(!prompt) return res.status(400).json({error: 'Prompt is required'});
     const image = await generateImage(prompt);
     const url =await getUrl(image)
     res.json({ res:url});
+  } catch (error) {
+    res.json(500).json({ error: error });
+  }
 }
 export const upscaleImage = async (req,res) => {
-    const url = req.body.url;
+    try {
+      const url = req.body.url;
     const upscaledImage = await upscale(url);
     res.json({ res:upscaledImage});
+    } catch (error) {
+      res.json(500).json({ error: error });
+    }
 }
+
+export const to_anime = async (req, res) => {
+  try {
+    const result = await AnimeStyle(req.body.url); // Assuming AnimeStyle is a function handling the anime style conversion
+    console.log(result)
+    if (result.status == 422) {
+      return res.status(422).json({ error: result.detail });
+    }
+    res.json({ res: result.output });
+  } catch (error) {
+    // console.log(error)
+    res.status(500).json({ error: error });
+  }
+};
+// AnimeStyle('https://replicate.delivery/czjl/C3rIgDoznWKXIZDW36KkYZSegUVcqpCAa1Qe238C8cTmDomTA/output.jpg').then(res=>console.log(res))
 //   generateImage( prompt).then(async(result)=>{
 //     const imageUrl = await getUrl(result)
 //     console.log(imageUrl.url);
