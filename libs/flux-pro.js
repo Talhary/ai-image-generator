@@ -12,7 +12,7 @@ async function generateImage( prompt, steps = 25, width = 1080, height = 1080) {
         prompt: prompt,
         guidance: 3,
         interval: 4,
-        aspect_ratio: "1:1",
+        aspect_ratio: "9:16",
         output_format: "png",
         output_quality: 100,
         safety_tolerance: 5,
@@ -21,7 +21,7 @@ async function generateImage( prompt, steps = 25, width = 1080, height = 1080) {
       "megapixels": "1",
       "num_outputs": 1,
       
-      "output_quality": 48,
+      "output_quality": 100,
       "num_inference_steps": 4
       }
     };
