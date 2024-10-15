@@ -221,11 +221,11 @@
               document.getElementById('generatedImage').classList.remove('hidden');
         
               // Set download link and open in new tab link
-              document.getElementById('downloadGeneratedImage').href = result.res.url;
-              document.getElementById('openGeneratedImage').href = result.res.url;
+              document.getElementById('downloadGeneratedImage').href = result.res.url[0];
+              document.getElementById('openGeneratedImage').href = result.res.url[0];
         
               // Save the generated image URL to local storage
-              saveImageUrl(result.res.url);
+              saveImageUrl(result.res.url[0]);
             }
           } catch (error) {
             toggleButtonState('generateButton', 'loadingSpinnerGen', false);
