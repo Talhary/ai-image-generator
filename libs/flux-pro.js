@@ -1,7 +1,7 @@
 import axios from 'axios'
 import 'dotenv/config'
 import Replicate from "replicate";
-async function generateImage( prompt, steps = 25, width = 1080, height = 1080) {
+async function generateImage( prompt, steps = 25, width = 1440, height = 1440) {
     const url = 'https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions';
     
     const data = {
@@ -12,7 +12,7 @@ async function generateImage( prompt, steps = 25, width = 1080, height = 1080) {
         prompt: prompt,
         guidance: 3,
         interval: 4,
-        aspect_ratio: "9:16",
+        aspect_ratio: "1:1",
         output_format: "png",
         output_quality: 100,
         safety_tolerance: 5,
