@@ -17,9 +17,10 @@ async function generateImage( prompt, steps = 25, width = 1080, height = 1080) {
         output_quality: 100,
         safety_tolerance: 5,
         prompt_upsampling: false,
-          "go_fast": true,
+          "go_fast": false,
       "megapixels": "1",
       "num_outputs": 1,
+    disable_safety_checker:true,
       
       "output_quality": 100,
       "num_inference_steps": 4
