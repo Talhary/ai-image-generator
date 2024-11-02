@@ -28,7 +28,7 @@ const upload = multer({ storage: storage });
   // File upload endpoint
   app.post('/upload', upload.single('file'), (req, res) => {
     if (req.file) {
-      const fileUrl = `https://ai-image-generator-by-talha-92a3aa2e28fe.herokuapp.com/uploads/${req.file.filename}`;
+      const fileUrl = `https://ai-images-d774e6336714.herokuapp.com/uploads/${req.file.filename}`;
       res.json({ url: fileUrl });
     } else {
       res.status(400).json({ error: 'File upload failed' });
