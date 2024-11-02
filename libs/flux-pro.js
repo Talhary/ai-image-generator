@@ -12,7 +12,7 @@ async function generateImage( prompt, steps = 25, width = 1080, height = 1080) {
         prompt: prompt,
         guidance: 3,
         interval: 4,
-        aspect_ratio: "16:9",
+        aspect_ratio: "9:16",
         output_format: "png",
         output_quality: 100,
         safety_tolerance: 5,
